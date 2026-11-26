@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>의사소통 유형 검사</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=IBM+Plex+Sans+KR:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: 다정하고 차분한 상담실의 말투. 판단하지 않고 비춰 주는 검사.
+   IDEA: 상담 시간에 나눠 주는 대화 카드 — 다섯 가지 말풍선.
+   PICTURE: 깊은 남색 위에 떠 있는 다섯 색 말풍선, 결과에선 내 말풍선이 크게.
+   COLOUR and TYPE: 남색 바탕 + 다섯 유형색 + 코랄 버튼 / Gowun Dodum 제목, IBM Plex Sans KR 본문.
+   LAYOUT: 한 줄기 세로 흐름, 최대 720px 본문, 휴대폰 우선. */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#121426);--ink:light-dark(#1b1d33,#eceef8);--mute:light-dark(#585c78,#a9adc6);
+--line:light-dark(#e2e4ee,#2c2f4c);--card:light-dark(#f4f5fa,#1b1e37);--deep:light-dark(#23264f,#191c3d);
+--accent:#ff7a59;--accent-ink:#2a1208;
+--ga:light-dark(#c8457a,#f08cb3);--na:light-dark(#c23a24,#ff8a72);--da:light-dark(#2f6aa8,#86b8ee);
+--ra:light-dark(#a86a06,#f5bd4f);--ma:light-dark(#13836a,#5fd3ad)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 "IBM Plex Sans KR",system-ui,sans-serif;overflow-x:clip;word-break:keep-all}
+h1,h2,h3{font-family:"Gowun Dodum","IBM Plex Sans KR",sans-serif;font-weight:400;line-height:1.2;text-wrap:balance;margin:0}
+.band{padding:clamp(28px,5vw,64px) max(5vw,16px)}
+.wrap{max-width:720px;margin:0 auto}
+.hero{background:var(--deep);color:#f3f4fb;text-align:center}
+.hero svg{width:100%;max-width:520px;height:auto;display:block;margin:0 auto 20px}
+.hero h1{font-size:clamp(34px,7vw,52px);margin-bottom:12px}
+.hero p{color:#c9cce4;max-width:34em;margin:0 auto 24px}
+.btn{font:600 16px/1 "IBM Plex Sans KR",sans-serif;min-height:48px;padding:0 24px;border-radius:999px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:focus-visible,.opt:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.meta{font-size:14px;color:#a9adc6;margin-top:16px}
+/* quiz */
+.qtop{background:var(--deep);color:#f3f4fb;padding:16px max(5vw,16px);position:sticky;top:0;z-index:2}
+.qtop .wrap{display:flex;align-items:center;gap:14px}
+.bar{flex:1;height:8px;border-radius:9px;background:rgba(255,255,255,.18);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:9px;transition:width .3s}
+.qn{font-size:14px;white-space:nowrap}
+.qtext{font-size:clamp(24px,4.6vw,32px);margin:8px 0 24px}
+.opts{display:grid;gap:10px;list-style:none;padding:0;margin:0}
+.opt{width:100%;text-align:start;font:16px/1.55 "IBM Plex Sans KR",sans-serif;color:var(--ink);background:var(--card);border:2px solid transparent;border-radius:16px;padding:14px 16px 14px 48px;position:relative;cursor:pointer;min-height:56px}
+.opt::before{content:"";position:absolute;left:16px;top:17px;width:18px;height:18px;border-radius:50%;border:2px solid var(--mute)}
+.opt:hover{border-color:var(--line)}
+.opt.on{border-color:var(--accent)}.opt.on::before{background:var(--accent);border-color:var(--accent);box-shadow:inset 0 0 0 3px var(--card)}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:22px}
+.hint{font-size:14px;color:var(--mute);margin-top:14px}
+/* result */
+.rhead{background:var(--deep);color:#f3f4fb;text-align:center}
+.rhead .lab{color:#c9cce4;font-size:15px}
+.big{font-size:clamp(44px,10vw,72px);margin:6px 0 4px;line-height:1.05}
+.rhead svg{width:min(320px,80%);height:auto;display:block;margin:0 auto 14px}
+.sec{margin-top:36px}
+.sec h2{font-size:clamp(24px,4vw,30px);margin-bottom:14px}
+.bars{display:grid;gap:12px}
+.br{display:grid;grid-template-columns:5.5em minmax(0,1fr) 2.8em;align-items:center;gap:12px;font-size:15px}
+.br .tr{height:14px;background:var(--card);border-radius:9px;overflow:hidden}
+.br .tr i{display:block;height:100%;border-radius:9px;width:0;transition:width .7s ease}
+.br b{text-align:right;font-weight:600;white-space:nowrap}
+.card{background:var(--card);border-radius:20px;padding:clamp(18px,3vw,28px);margin-top:16px}
+.card h3{font-size:24px;margin-bottom:4px}
+.card .nick{color:var(--mute);font-size:15px;margin-bottom:10px}
+.card ul{padding-inline-start:1.2em;margin:6px 0 12px}
+.card li{margin:4px 0}
+.k{font-weight:600;font-size:15px;margin-top:14px}
+.quotes{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.quotes span{background:var(--bg);border-radius:14px 14px 14px 4px;padding:8px 14px;font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{border:1.5px solid var(--line);border-radius:999px;padding:6px 14px;font-size:15px}
+details.card summary{cursor:pointer;font-family:"Gowun Dodum",sans-serif;font-size:21px;list-style:none;display:flex;justify-content:space-between;gap:10px;min-height:32px;align-items:center}
+details.card summary::after{content:"+";font-size:24px;color:var(--mute)}
+details[open].card summary::after{content:"−"}
+.note{font-size:14px;color:var(--mute);margin-top:28px}
+.toon{margin:14px 0 8px;background:#fff;color:#1b1d33;border-radius:18px;padding:14px;border:2px solid #1b1d33}
+.toon figcaption{font-weight:600;font-size:15px;margin-bottom:10px}
+.panels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.pn{position:relative;border:2px solid #1b1d33;border-radius:10px;background:color-mix(in srgb,var(--tc) 16%,#fff);padding:8px 8px 10px;display:flex;flex-direction:column;gap:4px}
+.pn.inner{background:color-mix(in srgb,var(--tc) 28%,#e9ecf5);border-style:dashed}
+.pn svg{width:100%;height:auto;display:block}
+.tag{font-size:13px;font-weight:600;background:#1b1d33;color:#fff;border-radius:999px;padding:2px 10px;align-self:flex-start}
+.eq{position:absolute;top:8px;right:10px;font-size:13px;font-weight:600;background:#fff;border:1.5px solid #1b1d33;border-radius:999px;padding:1px 8px}
+.bub{background:#fff;border:1.5px solid #1b1d33;border-radius:14px;padding:8px 10px;font-size:14px;line-height:1.5;margin:auto 0 0;color:#1b1d33}
+.bub.think{border-style:dashed;border-radius:20px;font-style:normal}
+.pose{font-size:14px;color:#3c3f5a;margin:10px 0 0}
+@media(max-width:600px){.panels{grid-template-columns:minmax(0,1fr)}.pn svg{max-width:300px;margin:0 auto}}
+.work{border-top:1.5px solid var(--line);margin-top:22px;padding-top:18px}
+.work .k{font-size:17px}
+.wl{display:grid;grid-template-columns:7.5em minmax(0,1fr);gap:8px 14px;margin:14px 0 0;font-size:15px}
+.wl dt{font-weight:600}.wl dd{margin:0}
+@media(max-width:600px){.wl{grid-template-columns:minmax(0,1fr);gap:2px}.wl dd{margin-bottom:10px}}
+.combo{display:grid;gap:12px;margin-top:12px}
+.combo .card{margin-top:0}
+.combo h3{font-size:19px;margin-bottom:6px}
+.combo p{margin:4px 0;font-size:15px}
+.lhj{background:var(--bg);border-radius:14px;padding:16px 18px;margin-top:16px}
+.lhj p{margin:6px 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;margin-top:12px}
+.grid2 .card{margin-top:0}
+.grid2 h3{font-size:20px;margin-bottom:6px}
+.grid2 p,.grid2 ul{font-size:15px;margin:4px 0}
+.circles{display:flex;gap:0;justify-content:center;margin:8px 0 4px}
+.circles span{width:130px;height:130px;border-radius:50%;display:grid;place-items:center;text-align:center;font-size:14px;line-height:1.3;padding:14px}
+.circles span:first-child{background:color-mix(in srgb,var(--da) 22%,transparent);margin-right:-26px}
+.circles span:last-child{background:color-mix(in srgb,var(--ma) 22%,transparent)}
+.dlg{background:var(--card);border-left:4px solid var(--line);padding:12px 16px;border-radius:0 12px 12px 0;font-size:15px}
+.dlg p{margin:4px 0}
+textarea{width:100%;font:15px/1.5 "IBM Plex Sans KR",sans-serif;margin-top:12px;border-radius:12px;padding:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(max-width:600px){.br{grid-template-columns:4.6em minmax(0,1fr) 2.6em;gap:8px}}
+</style>
+</head>
+<body>
+
+<!-- 시작 화면 -->
+<section id="intro" class="hero band">
+  <div class="wrap">
+    <svg viewBox="0 0 400 290" role="img" aria-label="다섯 가지 말투를 담은 말풍선">
+      <defs><filter id="sh" x="-10%" y="-10%" width="130%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#000" flood-opacity=".28"/></filter></defs>
+      <g id="balloons"></g>
+    </svg>
+    <h1>의사소통 유형 검사</h1>
+    <p>나는 대화할 때 어떤 모습을 가장 많이 보일까요? 8개 문항에서 지금의 나와 가장 가까운 문장을 하나씩 골라 주세요. 약 3분 걸려요.</p>
+    <div class="row">
+      <button class="btn primary" id="startBtn">검사 시작하기</button>
+      <button class="btn" id="resumeBtn" hidden>이어서 하기</button>
+    </div>
+    <div class="meta">회유형 · 비난형 · 초이성형 · 산만형 · 일치형<br>사티어의 의사소통 유형 + 이헌주 교수의 관계 심리학</div>
+  </div>
+</section>
+
+<!-- 문항 화면 -->
+<section id="quiz" hidden>
+  <div class="qtop"><div class="wrap"><span class="qn" id="qn">1 / 8</span><div class="bar"><i id="prog"></i></div></div></div>
+  <div class="band"><div class="wrap">
+    <h2 class="qtext" id="qtext"></h2>
+    <ul class="opts" id="opts"></ul>
+    <div class="nav">
+      <button class="btn" id="prevBtn">이전</button>
+      <button class="btn" id="homeBtn">처음으로</button>
+    </div>
+    <p class="hint">정답은 없어요. ‘되고 싶은 나’보다 ‘실제의 나’에 가까운 것을 골라 주세요.</p>
+  </div></div>
+</section>
+
+<!-- 결과 화면 -->
+<section id="result" hidden>
+  <div class="rhead band"><div class="wrap" id="rhead"></div></div>
+  <div class="band"><div class="wrap">
+    <div class="sec" style="margin-top:0">
+      <h2>유형별로 고른 개수</h2>
+      <div class="bars" id="bars"></div>
+    </div>
+    <div class="sec" id="mine"></div>
+    <div class="sec">
+      <h2>사람은 한 가지 유형만 쓰지 않아요</h2>
+      <p>집에서와 밖에서의 모습이 다를 수 있어요. 밖에서는 산만형, 안에서는 초이성형이기도 하고, 평소엔 회유형이다가 갑자기 비난형으로 바뀌기도 하죠. 두 번째로 많이 고른 유형도 함께 읽어 보세요.</p>
+      <div id="others"></div>
+    </div>
+    <div class="sec">
+      <h2>조직에서 자주 부딪히는 유형 조합</h2>
+      <p>회사에서는 한 사람의 유형보다 유형끼리의 만남이 문제를 키우곤 해요. 우리 팀은 어떤 조합인지 떠올려 보세요.</p>
+      <div class="combo">
+        <div class="card"><h3><span style="color:var(--na)">비난형 리더</span> × <span style="color:var(--ga)">회유형 팀원</span></h3><p>지시는 빠르지만 문제는 늦게 보고돼요. 리더가 화를 낼수록 팀원은 더 숨기고, 숨길수록 리더는 더 화가 나는 악순환이 생겨요.</p><p><b>바꿔 보기</b> 리더는 “문제를 빨리 말해 줘서 고맙다”는 말부터, 팀원은 “지금 이 부분이 어렵습니다”라는 한 문장부터 연습해요.</p></div>
+        <div class="card"><h3><span style="color:var(--da)">초이성형 리더</span> × <span style="color:var(--ra)">산만형 팀원</span></h3><p>리더는 규칙과 절차로 조이고, 팀원은 농담과 회피로 빠져나가요. 서로를 “답답하다”, “숨 막힌다”고 느끼죠.</p><p><b>바꿔 보기</b> 리더는 기준과 함께 마음을 묻고, 팀원은 불편한 소식일수록 짧게 먼저 공유해요.</p></div>
+        <div class="card"><h3><span style="color:var(--ga)">회유형</span>끼리 모인 팀</h3><p>회의는 평화롭지만 아무도 반대하지 않아, 잘못된 결정이 그대로 통과되곤 해요.</p><p><b>바꿔 보기</b> 회의마다 ‘우려 한 가지씩 말하기’ 시간을 정해 두면, 반대가 공격이 아니라 역할이 돼요.</p></div>
+        <div class="card"><h3><span style="color:var(--na)">비난형</span> × <span style="color:var(--na)">비난형</span></h3><p>누가 옳은지를 두고 회의가 승부가 돼요. 문제는 사라지고 사람만 남아요.</p><p><b>바꿔 보기</b> 이헌주 교수의 조언처럼, 할 말을 한 뒤에는 상대의 해명을 끊지 말고 끝까지 들어요.</p></div>
+      </div>
+      <p>결국 건강한 조직은 <b>일치형 대화</b>가 많은 곳이에요. 실수를 숨기지 않고 말할 수 있고, 반대 의견이 공격이 아니라 기여로 받아들여지는 팀이죠.</p>
+    </div>
+    <div class="sec">
+      <h2>서로가 ‘나쁜 사람’이 되어가는 이유</h2>
+      <div class="dlg">
+        <p><b>남편</b> 당신은 내가 왔는데도 불을 다 꺼놓고 정신 나갔어?</p>
+        <p><b>아내</b> 오늘도 술 먹었지? 자기 맘대로 퇴근하는데 내가 어떻게 알고 불을 켜놔? 전기세 낼 만큼 돈을 벌면 말이나 안 해.</p>
+      </div>
+      <p>성격 차이처럼 보이지만, 그 이면에는 불안이 있어요. 불안은 블랙홀처럼 상대까지 끌어들여 벽을 만들죠. 겉으로 드러난 말 아래를 살펴보면 이런 것들이 숨어 있어요.</p>
+      <ul>
+        <li><b>비난</b> 이면의 <b>욕구</b></li>
+        <li><b>분노와 단절</b> 이면의 <b>기대</b></li>
+        <li>내 속에 품고 있는 <b>열망</b></li>
+      </ul>
+      <p class="k">우리가 가진 다섯 가지 기본 욕구</p>
+      <div class="chips"><span>생존</span><span>힘과 성취</span><span>사랑과 소속</span><span>즐거움</span><span>자유</span></div>
+    </div>
+    <div class="sec">
+      <h2>관계는 ‘담고 담기는 것’</h2>
+      <p>이헌주 교수는 『관계의 그릇』에서 그릇이 크다는 것이 모든 사람을 품는 것이 아니라, 소중한 사람과 깊이 연결되는 것에 가깝다고 말해요. 모두에게 좋은 사람이 되려 애쓰다 지쳤다면, 이제 누구를 곁에 둘지 스스로 고를 차례예요.</p>
+      <div class="circles" aria-hidden="true"><span>영향력의 원<br>실제로 자주<br>만나는 사람</span><span>의미의 원<br>마음속에서<br>중요한 사람</span></div>
+      <p>내가 실제로 시간을 쓰는 사람(영향력의 원)과 마음속에서 중요한 사람(의미의 원)은 늘 같지 않아요. 두 원이 얼마나 겹치는지 그려 보는 것에서 관계 정리가 시작돼요.</p>
+      <div class="grid2">
+        <div class="card"><h3>감정은 전염돼요</h3><p>불안이 큰 사람과 오래 있으면 나도 조급해지듯, 감정은 관계 안에서 옮겨 와요. 그 사람을 만나고 돌아온 뒤 기분이 가라앉는지 점검해 보세요.</p><p class="k">조금 거리를 두면 좋은 사람</p><ul><li>투사가 강한 사람</li><li>극도의 이기주의자</li><li>불안을 전염시키는 사람</li></ul></div>
+        <div class="card"><h3>오래 곁에 둘 사람</h3><ul><li>내 인생에서 진짜 중요한 사람</li><li>나와 퍼즐 조각이 잘 맞는 사람</li><li>함께하면 편안하고 안전한 사람: 약점을 보여도 나를 버리거나 공격하지 않으리라 믿을 수 있는 사람</li><li>나를 긍정해 주는 사람</li><li>잘됐을 때 진심으로 기뻐해 주는 사람</li></ul></div>
+      </div>
+      <h3 style="font-size:22px;margin-top:24px">나는 어떤 사람이 될 것인가</h3>
+      <p>좋은 관계는 찾는 것만이 아니라 만들어지는 것이에요. 교수가 제안하는 네 가지 습관이에요.</p>
+      <div class="chips"><span>지나친 기대 내려놓기</span><span>먼저 호기심 보이기</span><span>주의 깊게 경청하기</span><span>좋은 면과 숨은 가능성 발견하기</span></div>
+      <p style="margin-top:16px">부정적인 이야기를 계속하는 사람보다, 좋은 영향력을 주고 격려하는 사람이 되어 보세요. 인간관계는 마라톤이에요.</p>
+    </div>
+    <div class="sec">
+      <div class="row" style="justify-content:flex-start">
+        <button class="btn primary" id="copyBtn">결과 복사하기</button>
+        <button class="btn" id="againBtn">다시 검사하기</button>
+      </div>
+      <textarea id="copyBox" rows="6" readonly hidden></textarea>
+      <p class="note">이 검사는 버지니아 사티어(Virginia Satir)의 의사소통 유형을 바탕으로 한 자기이해용 도구로, 의학적·심리적 진단이 아닙니다. 몸에 나타나는 신호 항목은 경향을 설명한 것이며, 건강이 걱정된다면 전문가와 상의하세요.</p>
+      <p class="note" style="margin-top:10px">참고: 이헌주(연세대학교 미래융합연구원 연구교수, 상담심리 전문가) 『관계의 그릇』(위즈덤하우스, 2026), 『무례한 사람을 다루는 법』(허들링북스, 2023), 유튜브 ‘지식인사이드’ 강의(2023). 교수의 관점 부분은 위 자료를 요약·재구성한 것이며, 각 유형과의 연결, 웹툰 속 대사와 조직에서의 모습은 이해를 돕기 위해 덧붙인 해석이에요.</p>
+    </div>
+  </div></div>
+</section>
+
+<script>
+{
+const TYPES=[
+ {k:'ga',L:'가',name:'회유형',nick:'착한',fill:'#f08cb3',say:'괜찮아요, 제가 할게요…',
+  traits:['자기를 부정하고 타인의 비위를 맞춰요','갈등 상황에서 낮은 자세로 변명하고 사과하는 등 지나치게 착하게 행동해요','돌봄을 줌으로써 타인을 통제하기도 해요','생의 초기부터 거절이나 편애를 겪은 경우가 많아요'],
+  inner:['나는 항상 좋은 사람이어야 해','나는 모든 사람에게 칭찬받아야 해','나는 가치가 없어'],
+  body:'감정의 억압, 우울, 소화기관의 장애나 편두통',res:'타인에 대한 돌봄과 민감한 정서',
+  step:['작은 일부터 “저는 이렇게 생각해요”라고 말해 보기','남을 돌보듯 내 감정도 살피고 이름 붙여 주기']},
+ {k:'na',L:'나',name:'비난형',nick:'무서운',fill:'#ff8a72',say:'도대체 왜 그랬어!',
+  traits:['회유형과 반대로, 자신은 옳다는 강한 신념이 있어요','독선적이고 지배적이며 다른 사람을 무시하는 태도를 보이기도 해요','공격적이고 통제적으로 보이며 쉽게 분노하는 다혈질적 측면이 있어요','폭군과 같은 모습을 띨 수 있어요 (예: ‘남자답다’라는 말의 이면)','무기는 ‘싸우기’ — 하지만 강한 비난은 사실 도움을 요청하는 호소일 수 있어요'],
+  inner:['나는 옳고 너는 틀렸어'],
+  body:'잦은 분노와 짜증, 고혈압이나 혈액순환의 어려움',res:'추진력, 리더십',
+  step:['“너는 왜”를 “나는 ~해서 속상해”로 바꿔 말하기','화가 올라올 때, 그 아래 있는 바람(인정·존중)을 먼저 알아차리기']},
+ {k:'da',L:'다',name:'초이성형',nick:'올곧은',fill:'#86b8ee',say:'원칙적으로 보면…',
+  traits:['감정적으로 냉정하고 객관성과 논리성을 중시해요','자신과 타인 모두의 감정을 거부하고 합리적인 방식에 몰두해요','경직되어 있고 자신의 감정을 드러내기를 두려워해요','강박적 사고, 사회적 소외, 공감력 부족으로 이어질 수 있어요'],
+  inner:['마땅히 이래야만 한다'],
+  body:'근육 경직, 심장 질환, 성기능 저하 등',res:'지식, 유능함, 성취적인 자세',
+  step:['옳고 그름을 따지기 전에 “그때 기분이 어땠어?” 물어보기','하루 한 번, 내 감정을 한 단어로 적어 보기']},
+ {k:'ra',L:'라',name:'산만형',nick:'재미있는',fill:'#f5bd4f',say:'아 맞다, 근데 그거 알아?',
+  traits:['지나치게 즐거워하지만 익살맞은 행동 때문에 깊은 대화가 어려워요','대화 중 주제를 자주 바꾸고 일관성 없는 말을 해요','정서적으로 혼란스럽거나 무관심한 태도를 보여요','타인의 인정을 갈구하며 소외되는 것을 두려워해요','긴장감을 견디기 어려워해요','내면의 공허함과 깊은 외로움이 있어요 — 심리적·물리적 공간으로 물러나는 ‘철회형’도 포함돼요'],
+  inner:['정신이 없어'],
+  body:'신경계통의 장애, 당뇨, 비만, 위장장애',res:'창의성, 유머, 즐거움',
+  step:['긴장될 때 한 주제에 1분만 더 머물러 보기','웃음 뒤의 진짜 감정을 믿을 만한 한 사람에게 말해 보기']},
+ {k:'ma',L:'마',name:'일치형',nick:'좋은 사람',fill:'#5fd3ad',say:'나는 이렇게 느껴. 너는 어때?',
+  traits:['내면의 감정·생각과 겉으로 표현하는 내용이 일치해요','겉과 속이 같은 사람이에요','원하는 것을 진솔하고 적절하게 표현해요','타인의 의견을 경청하고 감정을 존중하며 배려해요','자신과 타인의 감정을 모두 중요하게 여겨요'],
+  inner:['나도 소중하고, 너도 소중해'],
+  body:'',res:'자기 존중과 타인 존중, 신뢰',
+  step:['지금처럼 내 마음과 상대 마음을 함께 존중하기','인간관계는 마라톤 — 지칠 땐 쉬어 가도 괜찮아요']}
+];
+const LHJ={
+ ga:{t:'착한 아이 콤플렉스와 울타리',
+  p:'이헌주 교수는 남에게 더 참고 맞춰 주면서 문제의 원인을 늘 자기에게서 찾는 마음을 ‘착한 아이 콤플렉스’로 설명해요. 그 뿌리로는 내 욕구를 말하지 못하게 만드는 <b>압박감</b>, 스스로를 탓하도록 배운 <b>비난</b>의 경험, 관계가 끊어질까 봐 거절하지 못하는 <b>관계성</b>을 꼽아요. 착하고 다정한 사람이 무례한 사람에게 자주 상처받는 이유이기도 하죠.',
+  l:['메뉴 고르기 같은 작은 선택부터 내 의견을 말해 보기','나를 지키는 울타리 세우기: 감당하기 어려운 부탁은 “그건 어려워요”라고 말하기','관계를 끊지 않아도 괜찮아요. 내가 어디까지 할 수 있는지를 행동으로 보여 주면 돼요']},
+ na:{t:'내 마음을 몰라준다고 느낄 때',
+  p:'상대가 내 욕구를 잘 모를 때는 원하는 바를 분명하고 구체적으로 말해야 비로소 전달된다고 교수는 말해요. 비난은 대개 “왜 몰라줘?”에서 시작되지만, 상대는 정말 모르고 있을 수 있어요. 또 할 말을 한 뒤 상대가 해명할 때 말을 끊거나 곧바로 반박하면 대화는 다시 이기고 지는 싸움이 된다고 강조해요.',
+  l:['“너는 왜 맨날…” 대신 “나는 ~를 원해”라고 구체적으로 요청하기','할 말을 했다면, 상대의 해명은 끝까지 듣기','비난 아래 있는 욕구(인정·존중·사랑)를 먼저 알아차리기']},
+ da:{t:'얼음과 불: 관계 욕구의 차이',
+  p:'교수는 차갑고 관계 욕구가 낮은 사람을 ‘얼음형’에 빗대며, 관계 욕구가 큰 사람과 만날 때 갈등이 커지기 쉽다고 설명해요. 감정 대신 논리로 대응하는 초이성형의 태도는, 의도와 달리 상대에게는 차가운 거절로 느껴질 수 있다는 뜻이에요. 저서 『관계의 그릇』에서는 마음을 층으로 나눠 ‘완벽주의자의 감정’부터 더 깊은 곳의 감정까지 들여다보게 해요.',
+  l:['나와 상대의 관계 욕구 크기가 다를 수 있음을 인정하기','옳고 그름을 말하기 전에 “그때 마음이 어땠어?” 묻기','“마땅히 그래야 한다”는 기준 뒤에 있는 두려움 살펴보기']},
+ ra:{t:'감정을 피하지 말고 들여다보기',
+  p:'『관계의 그릇』에서 교수는 마음을 여러 층으로 나누고, 그중 한 층을 ‘도망자의 감정’이라고 불러요. 긴장되는 순간 웃음이나 딴 이야기로 빠져나가는 산만형에게 특히 필요한 시선이에요. 또 나를 바꾸고 싶다면 의지보다 환경을 먼저 바꾸고, 매일의 작은 리추얼로 마음의 그릇을 돌보라고 권해요.',
+  l:['긴장될 때 화제를 돌리고 싶은 순간을 알아차리고, 한 박자만 머무르기','웃음 뒤의 외로움을 믿을 만한 한 사람에게 말해 보기','하루·일주일·한 달 단위로 작은 돌봄 리추얼 정하기']},
+ ma:{t:'인간관계의 본질은 진실성',
+  p:'교수는 지식인사이드 강의에서 “인간관계 본질은 진실성”이라고 말했어요. 여기서 진실성은 내 판단만 옳다고 밀어붙이는 고집이 아니에요. 내 의사를 솔직하고 유연하게 표현하고, 상대의 의견을 경청하며, 말과 행동이 일치하도록 꾸준히 연습하는 것이에요. 일치형이 바로 이 모습이에요.',
+  l:['존중한다고 말했다면 약속을 지키는 행동으로 보여 주기','솔직하되 유연하게: 내 의견을 말한 뒤 상대의 생각도 묻기','약점을 드러내도 안전한 관계를 지금처럼 가꾸기']}
+};
+const Q=[
+ ['당신은 의견을 말할 때 실제 어떤 모습을 많이 보이는 편인가요?',['상대의 눈치를 보느라 내 의견을 말하는 것이 어렵다.','상대의 입장을 잘 받아들이지 않으며 내 주장을 강하게 말하는 편이다.','공정성에 기반을 두고 무엇이 옳은지를 따지는 편이다.','어떤 사안에 대해 내 욕구나 생각을 명확히 잘 모르겠다.','타인의 눈치를 보기보다는 내가 원하는 바를 명확히 표현한다.']],
+ ['내가 그동안 사람들과의 관계에서 보인 방식은 무엇인가요?',['누군가를 도와주거나 돌보기 위해 노력한다.','내 의견을 무시하는 것 같아 예민해지고 화가 자주 난다.','합리적인 사람이라고 생각하지만 상대에게는 종종 냉정하다는 이야기를 자주 듣는다.','하나의 주제에 대해 말하기보다는 계속 화제를 바꾼다.','힘든 이야기를 상대에게 잘하고 상대의 이야기도 경청할 수 있다.']],
+ ['내면을 들여다볼 때 실제 나의 모습을 가장 잘 설명하는 문장은 무엇인가요?',['원하는 바를 명확히 이야기하기에는 자신감이 부족한 편이다.','누군가에게 짜증과 화를 많이 낸다는 이야기를 자주 듣지만, 내 의견이 잘 받아들여지지 않아 억울한 것이 사실이다.','많은 이들이 나를 유능하다고 하지만 사실 나는 깊은 무기력감을 느끼고 통제력을 잃게 될까 봐 두렵다.','어디에도 소속되지 못한 것 같고 내가 느끼는 진짜 감정이 무엇인지 잘 모르겠다.','원하는 것을 명확히 이해하고 느끼고 있으며 이를 상대에게 잘 표현한다.']],
+ ['누군가와 친밀해지려고 하거나 거리감을 느낄 때 가장 많이 보이는 패턴은 무엇인가요?',['누군가에게 친밀해지려고 할 때 혹시라도 거절을 겪지 않을까 조심한다.','누군가가 나를 멀리하려고 하면, 가서 왜 그랬는지를 묻거나 따지는 편이다.','친밀감을 요구하지도 않을뿐더러 누군가가 내게 접근할 때 거리감을 유지하려고 한다.','누군가에게 상당히 친한 것처럼 이야기하나 실은 그렇게 친한 것인지 잘 모르겠다.','누군가에게 거절감을 받을 때 그 아픈 감정에 머무를 수 있으며, 그 역학을 충분히 숙고한다.']],
+ ['상대와 이야기할 때 가장 많이 보이는 모습은 무엇인가요?',['대화할 때, 상대의 표정이나 말투, 태도가 가장 중요하게 보인다.','이야기할 때, 나의 감정과 생각이 가장 중요하다.','나와 상대의 생각이나 감정보다는 명확한 원리 원칙에 따라 옳고 그름을 판단한다.','어떤 주제에 잘 집중하지 못하며, 긴장된 상황에서는 특히 그러하여 동떨어진 주제나 엉뚱한 행동을 한다.','지금 대화하고 있는 자신의 감정과 상대의 감정 모두를 잘 이해하고 수용할 수 있으며, 타인을 기꺼이 신뢰한다.']],
+ ['당신이 보통 쓰는 말투와 가장 가까운 것은 무엇인가요?',['상냥하고 조심스러운 태도를 보인다.','명령적이고 지시적인 말투를 쓴다.','똑똑하고 합리적인 말투를 쓴다.','유쾌하고 유머러스하나 내면은 늘 불안하다.','외부의 눈치를 보기보다는 내 의견을 부드럽지만 명확하게 이야기한다.']],
+ ['공동체가 어려움에 부닥쳐 있어요. 당신이 가장 많이 보이는 패턴은?',['이 일이 잘못될 때, 상대에게 비난받고 부정적인 평가를 받을까 봐 노심초사한다.','이 일이 잘못된 이유는 상대의 결점이나 잘못 때문인 것을 잘 알고 있고, 기회가 된다면 이를 명백하게 이야기할 것이다.','공동체가 원칙을 얼마나 잘 따랐는지를 살펴보는 동시에, 나 역시 그 원칙에 입각하여 실수하지 않으려고 애를 쓴다.','이 일이 잘못되어 간다는 이야기를 듣는 것이 두려워 다른 일에 집중하려고 노력한다.','공동체가 겪은 어려움이 큰 일이지만 구성원들에게 기본적인 신뢰를 느끼며, 충분히 이를 극복할 수 있다는 믿음을 가지고 있다.']],
+ ['타인과의 관계에서 당신이 가진 장점 중 가장 가까운 것은 무엇인가요?',['타인의 미세한 표정과 반응을 잘 읽어낸다.','자기주장을 잘하고 리더십이 있다.','논리적이고 어떤 문제를 잘 해결할 수 있다.','대부분의 관계에서 유쾌하고 재밌다.','누군가와 쉽게 친밀해질 수 있고 자신과 타인을 마음 깊이 신뢰할 수 있다.']]
+];
+const KEY='commtype-v1';
+const $=id=>document.getElementById(id);
+let S=null;
+
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const load=()=>{try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.ans)&&s.ans.length===Q.length)return s}catch(e){}return null};
+const show=id=>{['intro','quiz','result'].forEach(x=>$(x).hidden=x!==id);window.scrollTo(0,0)};
+
+function balloon(t,x,y,w,h,rot){
+  return `<g transform="translate(${x} ${y}) rotate(${rot} ${w/2} ${h/2})" filter="url(#sh)">
+   <path d="M18 ${h-2} L10 ${h+16} L36 ${h-2}Z" fill="${t.fill}"/>
+   <rect width="${w}" height="${h}" rx="22" fill="${t.fill}"/>
+   <rect x="8" y="5" width="${w-16}" height="${h/2-6}" rx="16" fill="#fff" opacity=".18"/>
+   <text x="${w/2}" y="${h/2+6}" text-anchor="middle" font-family="IBM Plex Sans KR, sans-serif" font-size="15" font-weight="600" fill="#1b1d33">${t.say}</text></g>`;
+}
+$('balloons').innerHTML=[
+  balloon(TYPES[0],14,22,186,52,-3),
+  balloon(TYPES[1],214,4,172,52,4),
+  balloon(TYPES[2],36,108,160,52,2),
+  balloon(TYPES[3],196,92,192,52,-4),
+  balloon(TYPES[4],92,186,224,60,0)
+].join('');
+
+function start(){
+  S={order:Q.map(()=>shuffle([0,1,2,3,4])),ans:Array(Q.length).fill(null),i:0,done:false};
+  save();renderQ();show('quiz');
+}
+function renderQ(){
+  const i=S.i,[q,opts]=Q[i];
+  $('qn').textContent=`${i+1} / ${Q.length}`;
+  $('prog').style.width=`${(S.ans.filter(a=>a!==null).length)/Q.length*100}%`;
+  $('qtext').textContent=q;
+  $('opts').innerHTML=S.order[i].map(o=>`<li><button class="opt${S.ans[i]===o?' on':''}" data-o="${o}">${opts[o]}</button></li>`).join('');
+  $('prevBtn').disabled=i===0;$('prevBtn').style.opacity=i===0?.4:1;
+}
+function choose(o){
+  S.ans[S.i]=o;save();
+  [...$('opts').querySelectorAll('.opt')].forEach(b=>b.classList.toggle('on',+b.dataset.o===o));
+  $('prog').style.width=`${(S.ans.filter(a=>a!==null).length)/Q.length*100}%`;
+  setTimeout(()=>{
+    const next=S.ans.findIndex(a=>a===null);
+    if(S.i<Q.length-1&&S.ans[S.i+1]===null){S.i++;save();renderQ();window.scrollTo(0,0)}
+    else if(next===-1){S.done=true;save();renderResult()}
+    else{S.i=next;save();renderQ();window.scrollTo(0,0)}
+  },220);
+}
+function counts(){const c=[0,0,0,0,0];S.ans.forEach(a=>{if(a!==null)c[a]++});return c}
+
+/* ---------- 웹툰: 친구가 30분 늦었을 때 ---------- */
+const INK='#1b1d33',FR='#b9c3dd';
+const TOON={
+ ga:{say:'아냐 아냐, 괜찮아! 나도 방금 왔어~ 오느라 힘들었지?',think:'사실 30분 내내 기다렸는데… 싫은 소리 하면 나를 싫어하겠지?',
+  me:{x:70,y:90,legs:'kneel',arms:'together',eyes:'happy',mouth:'smile',ex:['sweat','blush']},fr:{eyes:'dot',mouth:'smile'},
+  in:{s:.85,arms:'hug',eyes:'sad',mouth:'frown',ex:['tear']},
+  pose:'사티어는 회유형을 ‘무릎을 꿇고 두 손을 모아 비는 자세’로 표현했어요. 겉으로는 웃지만 속에서는 서운함을 삼키고 있어요.'},
+ na:{say:'넌 맨날 이래! 내 시간은 시간도 아니야? 생각이 있는 거야?',think:'또 나만 기다렸어. 나는 너한테 소중하지 않은 걸까…',
+  me:{x:66,y:86,s:1.12,arms:'point',eyes:'angry',mouth:'shout',ex:['anger','steam']},fr:{x:172,s:.86,r:-10,eyes:'sad',mouth:'frown',ex:['sweat']},
+  in:{s:.78,arms:'down',eyes:'sad',mouth:'frown',ex:['tear']},
+  pose:'사티어는 비난형을 ‘한 손으로 상대를 손가락질하는 자세’로 표현했어요. 큰 목소리 뒤에는 작아진 내가 숨어 있어요.'},
+ da:{say:'약속은 7시, 지금은 7시 32분이야. 늦을 땐 미리 연락하는 게 기본 원칙이지.',think:'기다리는 동안 불안하고 서운했어. 하지만 감정을 드러내면 약해 보일 거야.',
+  me:{x:70,y:86,arms:'clip',eyes:'dot',mouth:'flat',ex:['glasses']},fr:{eyes:'side',mouth:'wavy',ex:['sweat']},
+  in:{arms:'hug',eyes:'sad',mouth:'flat',ex:['glasses','ice']},
+  pose:'사티어는 초이성형을 ‘몸을 꼿꼿이 세운 채 굳어 움직이지 않는 자세’로 표현했어요. 논리라는 얼음 속에 감정을 가둬 두고 있어요.'},
+ ra:{say:'어? 왔어? ㅋㅋ 근데 저기 새로 생긴 가게 봤어? 완전 웃기던데!',think:'분위기 어색해지는 게 너무 무서워. 서운한 건… 그냥 없던 걸로 하자.',
+  me:{x:70,y:86,r:-14,legs:'kick',arms:'wave',eyes:'side',mouth:'big',ex:['notes']},fr:{eyes:'dot',mouth:'flat',ex:['q']},
+  in:{s:.78,arms:'hug',eyes:'closed',mouth:'frown',ex:['cloud']},
+  pose:'사티어는 산만형을 ‘한시도 가만히 있지 못하고 균형을 잃은 자세’로 표현했어요. 웃음 뒤에는 혼자 남은 외로움이 있어요.'},
+ ma:{say:'기다리면서 걱정도 되고 좀 서운했어. 다음엔 늦으면 미리 연락해 줄래?',think:'서운했던 건 사실이야. 그래도 이 친구와 계속 잘 지내고 싶어.',
+  me:{x:70,y:86,arms:'open',eyes:'dot',mouth:'smile'},fr:{eyes:'happy',mouth:'smile',ex:['blush']},
+  in:{arms:'open',eyes:'dot',mouth:'smile',ex:['heart','blush']},
+  pose:'일치형은 두 발로 균형 있게 서서 상대를 똑바로 마주해요. 속마음과 하는 말이 같아서, 상대도 무엇을 해야 할지 알 수 있어요.'}
+};
+const ARMS={
+ down:'M-24 6q-9 8-8 18M24 6q9 8 8 18',
+ up:'M-23-6q-12-10-10-24M23-6q12-10 10-24',
+ point:'M-24 6q-9 8-8 18M24 0q14-2 30-10',
+ together:'M-22 8q6 12 20 10M22 8q-6 12-20 10',
+ hug:'M-24 10q10 14 30 12M24 10q-10 14-30 12',
+ open:'M-24 2q-14-2-22-14M24 2q14-2 22-14',
+ wave:'M-24 6q-9 8-8 18M24-2q12-6 14-22',
+ clip:'M-24 6q-9 8-8 18M24 4q6 8 0 16',
+ run:'M-24 0q-12 2-18-8M24 6q12 4 16 14'
+};
+function mochi(o){
+  const {x=0,y=0,c=FR,s=1,r=0,eyes='dot',mouth='smile',arms='down',ex=[],legs='stand'}=o;
+  const kn=legs==='kneel',by=kn?6:0,ry=kn?25:30,f=by;
+  const st=`stroke="${INK}" stroke-width="2" `;
+  let g=`<ellipse cx="0" cy="35" rx="25" ry="4.5" fill="#000" opacity=".12"/>`;
+  if(legs==='stand')g+=`<ellipse cx="-11" cy="30" rx="8" ry="5" fill="${c}" ${st}/><ellipse cx="11" cy="30" rx="8" ry="5" fill="${c}" ${st}/>`;
+  if(legs==='run')g+=`<ellipse cx="-17" cy="27" rx="8" ry="5" transform="rotate(-30 -17 27)" fill="${c}" ${st}/><ellipse cx="14" cy="31" rx="8" ry="5" fill="${c}" ${st}/>`;
+  if(legs==='kick')g+=`<ellipse cx="-10" cy="31" rx="8" ry="5" fill="${c}" ${st}/><ellipse cx="24" cy="18" rx="8" ry="5" transform="rotate(-40 24 18)" fill="${c}" ${st}/>`;
+  if(kn)g+=`<ellipse cx="-13" cy="30" rx="10" ry="5" fill="${c}" ${st}/><ellipse cx="13" cy="30" rx="10" ry="5" fill="${c}" ${st}/>`;
+  g+=`<ellipse cx="0" cy="${by}" rx="26" ry="${ry}" fill="${c}" stroke="${INK}" stroke-width="2.2"/>`;
+  g+=`<ellipse cx="-9" cy="${by-ry+11}" rx="9" ry="4.5" fill="#fff" opacity=".5"/>`;
+  const E={
+   dot:`<circle cx="-9" cy="${f-8}" r="2.8" fill="${INK}"/><circle cx="9" cy="${f-8}" r="2.8" fill="${INK}"/>`,
+   happy:`<path d="M-13 ${f-7}q4-5 8 0M5 ${f-7}q4-5 8 0" ${st}fill="none" stroke-linecap="round"/>`,
+   sad:`<circle cx="-9" cy="${f-7}" r="2.6" fill="${INK}"/><circle cx="9" cy="${f-7}" r="2.6" fill="${INK}"/><path d="M-14 ${f-13}L-5 ${f-16}M14 ${f-13}L5 ${f-16}" ${st}stroke-linecap="round"/>`,
+   angry:`<circle cx="-9" cy="${f-7}" r="2.8" fill="${INK}"/><circle cx="9" cy="${f-7}" r="2.8" fill="${INK}"/><path d="M-15 ${f-18}L-4 ${f-12}M15 ${f-18}L4 ${f-12}" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/>`,
+   side:`<circle cx="-4" cy="${f-8}" r="2.8" fill="${INK}"/><circle cx="14" cy="${f-8}" r="2.8" fill="${INK}"/>`,
+   closed:`<path d="M-13 ${f-7}q4 3 8 0M5 ${f-7}q4 3 8 0" ${st}fill="none" stroke-linecap="round"/>`,
+   tight:`<path d="M-13 ${f-11}l7 3-7 3M13 ${f-11}l-7 3 7 3" ${st}fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+  };
+  const M={
+   smile:`<path d="M-6 ${f+3}q6 6 12 0" ${st}fill="none" stroke-linecap="round"/>`,
+   big:`<path d="M-8 ${f+2}q8 12 16 0z" fill="${INK}"/>`,
+   frown:`<path d="M-6 ${f+8}q6-6 12 0" ${st}fill="none" stroke-linecap="round"/>`,
+   open:`<ellipse cx="0" cy="${f+6}" rx="4" ry="5" fill="${INK}"/>`,
+   shout:`<ellipse cx="0" cy="${f+6}" rx="7" ry="6" fill="${INK}"/>`,
+   flat:`<path d="M-5 ${f+5}h10" ${st}stroke-linecap="round"/>`,
+   wavy:`<path d="M-8 ${f+5}q2-3 4 0t4 0 4 0 4 0" ${st}fill="none" stroke-linecap="round"/>`
+  };
+  g+=(E[eyes]||E.dot)+(M[mouth]||M.smile);
+  g+=`<path d="${ARMS[arms]||ARMS.down}" stroke="${INK}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+  if(arms==='clip')g+=`<g transform="rotate(-8 14 14)"><rect x="5" y="2" width="18" height="23" rx="2" fill="#fff" ${st}/><path d="M9 9h10M9 14h10M9 19h6" stroke="${INK}" stroke-width="1.4"/></g>`;
+  if(arms==='point')g+=`<circle cx="55" cy="-10" r="3" fill="${c}" ${st}/>`;
+  const X={
+   sweat:`<path d="M25-30q5 7 0 10q-5-3 0-10z" fill="#8fd0f5" stroke="${INK}" stroke-width="1.2"/>`,
+   blush:`<ellipse cx="-16" cy="${f+1}" rx="5" ry="3" fill="#ff8aa8" opacity=".6"/><ellipse cx="16" cy="${f+1}" rx="5" ry="3" fill="#ff8aa8" opacity=".6"/>`,
+   anger:`<path d="M-30-38l2 10M-24-38l2 10M-32-34h12M-32-30h12" stroke="#e0402a" stroke-width="2.2" stroke-linecap="round"/>`,
+   steam:`<path d="M-6-34q-4-6 0-10t0-10M8-34q-4-6 0-10t0-10" stroke="#9aa0b4" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+   tear:`<path d="M-10 ${f-3}q4 7 0 9q-4-2 0-9z" fill="#8fd0f5" stroke="${INK}" stroke-width="1"/>`,
+   glasses:`<circle cx="-9" cy="${f-8}" r="6.5" fill="#fff" fill-opacity=".25" ${st}/><circle cx="9" cy="${f-8}" r="6.5" fill="#fff" fill-opacity=".25" ${st}/><path d="M-2.5 ${f-8}h5" ${st}/>`,
+   notes:`<text x="28" y="-28" font-size="15" fill="${INK}" font-family="sans-serif">♪</text><text x="38" y="-12" font-size="13" fill="${INK}" font-family="sans-serif">♫</text>`,
+   q:`<text x="24" y="-30" font-size="20" font-weight="700" fill="${INK}" font-family="sans-serif">?</text>`,
+   heart:`<path d="M0-40c-6-8-16-2-10 6l10 8 10-8c6-8-4-14-10-6z" fill="#ff6b8a" stroke="${INK}" stroke-width="1.4"/>`,
+   ice:`<rect x="-36" y="-40" width="72" height="80" rx="8" fill="#bfe3ff" fill-opacity=".5" stroke="#6fa8e0" stroke-width="2.2"/><path d="M-28-30l10-6M-28-22l6-4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>`,
+   cloud:`<path d="M-22-50a9 9 0 0 1 12-10a11 11 0 0 1 20 2a8 8 0 0 1 4 15h-34a7 7 0 0 1-2-7z" fill="#d3d9e8" stroke="${INK}" stroke-width="1.5"/><path d="M-12-38l-3 7M0-38l-3 7M12-38l-3 7" stroke="#6fb6e6" stroke-width="2" stroke-linecap="round"/>`,
+   tie:`<path d="M-3 ${f+13}h6l-1 3 3 12-5 5-5-5 3-12z" fill="#2c2f6b" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>`,
+   pile:`<g fill="#fff" stroke="${INK}" stroke-width="1.5"><rect x="-15" y="-46" width="30" height="7" rx="1"/><rect x="-12" y="-53" width="28" height="7" rx="1"/><rect x="-17" y="-60" width="30" height="7" rx="1"/><rect x="-13" y="-67" width="27" height="7" rx="1"/></g>`,
+   lines:`<path d="M-38-6h-14M-38 6h-18M-38 16h-10" stroke="#9aa0b4" stroke-width="2" stroke-linecap="round"/>`
+  };
+  ex.forEach(k=>g+=X[k]||'');
+  return `<g transform="translate(${x} ${y}) rotate(${r}) scale(${s})">${g}</g>`;
+}
+const ground='<path d="M8 121H212" stroke="#1b1d33" stroke-opacity=".18" stroke-width="2" stroke-linecap="round"/>';
+const svgW=(inner,label)=>`<svg viewBox="0 0 220 130" role="img" aria-label="${label}">${ground}${inner}</svg>`;
+/* ---------- 회사 장면: 마감 하루 전, 동료 파트에 문제가 생겼을 때 ---------- */
+const OTOON={
+ ga:{say:'괜찮아요! 제가 오늘 밤새서 고칠게요~ 신경 쓰지 마세요!',think:'또 내가 떠안았네… 거절하면 팀에서 미움받을 거야.',
+  me:{x:70,y:88,arms:'together',eyes:'happy',mouth:'smile',ex:['sweat','tie','pile']},fr:{eyes:'happy',mouth:'smile',ex:['tie']},
+  in:{s:.85,arms:'hug',eyes:'sad',mouth:'frown',ex:['tear','pile']}},
+ na:{say:'이걸 이제 말하면 어떡해요? 이거 누가 책임질 거예요?',think:'일이 틀어지면 내가 무능해 보일까 봐 겁나. 아무도 내 말을 안 들어.',
+  me:{x:66,y:86,s:1.12,arms:'point',eyes:'angry',mouth:'shout',ex:['anger','tie']},fr:{x:172,s:.86,r:-10,eyes:'sad',mouth:'frown',ex:['sweat','tie']},
+  in:{s:.78,arms:'down',eyes:'sad',mouth:'frown',ex:['sweat']}},
+ da:{say:'원인부터 분석하죠. 검수 절차를 지키지 않은 게 문제입니다.',think:'실수가 생기면 통제력을 잃을 것 같아 불안해. 그 마음은 말할 수 없어.',
+  me:{x:70,y:86,arms:'clip',eyes:'dot',mouth:'flat',ex:['glasses','tie']},fr:{eyes:'side',mouth:'wavy',ex:['sweat','tie']},
+  in:{arms:'hug',eyes:'sad',mouth:'flat',ex:['glasses','ice']}},
+ ra:{say:'헐 진짜요? ㅋㅋ 일단… 다들 점심 뭐 먹을래요? 배고프면 일이 안 돼요!',think:'일이 잘못되어 간다는 얘기는 듣기 싫어… 다른 일에 집중하자.',
+  me:{x:70,y:86,r:-14,legs:'kick',arms:'wave',eyes:'side',mouth:'big',ex:['notes','tie']},fr:{eyes:'dot',mouth:'flat',ex:['q','tie']},
+  in:{s:.78,arms:'hug',eyes:'closed',mouth:'frown',ex:['cloud']}},
+ ma:{say:'빨리 말해 줘서 고마워요. 같이 범위를 나눠서 오늘 안에 해결해 봐요.',think:'급한 상황이지만, 우리 팀이라면 충분히 해낼 수 있어.',
+  me:{x:70,y:86,arms:'open',eyes:'dot',mouth:'smile',ex:['tie']},fr:{eyes:'happy',mouth:'smile',ex:['blush','tie']},
+  in:{arms:'open',eyes:'dot',mouth:'smile',ex:['heart']}}
+};
+const SCENE={
+ friend:{cap:'웹툰으로 보기 · 친구가 약속에 30분 늦었을 때',who:'친구',line:'미안! 30분이나 늦었지…',D:TOON,
+  p1:c=>`<g transform="translate(70 24)"><circle r="11" fill="#fff" stroke="${INK}" stroke-width="2"/><path d="M0 0V-7M0 0l5 3" stroke="${INK}" stroke-width="2" stroke-linecap="round"/></g>`+
+    mochi({x:70,y:86,c,eyes:'dot',mouth:'flat'})+mochi({x:162,y:86,r:8,legs:'run',arms:'run',eyes:'tight',mouth:'open',ex:['sweat','lines']})},
+ office:{cap:'회사에서는 · 마감 하루 전, 동료 파트에 문제가 생겼을 때',who:'동료',line:'죄송해요… 제 파트 데이터가 틀렸어요. 마감은 내일인데…',D:OTOON,
+  p1:c=>`<g transform="translate(18 8)"><rect width="84" height="44" rx="4" fill="#fff" stroke="${INK}" stroke-width="2"/><path d="M12 38l16-10 14 6 18-14 14 4" stroke="#e0402a" stroke-width="2.4" fill="none" stroke-linecap="round"/><text x="8" y="15" font-size="11" font-weight="700" fill="${INK}" font-family="sans-serif">D-1</text></g>`+
+    mochi({x:64,y:86,c,eyes:'dot',mouth:'open',ex:['tie']})+mochi({x:162,y:88,eyes:'sad',mouth:'wavy',arms:'clip',ex:['sweat','tie']})}
+};
+function toon(t,sc='friend'){
+  const S=SCENE[sc],d=S.D[t.k],same=t.k==='ma';
+  const p1=svgW(S.p1(t.fill),'상황');
+  const p2=svgW(mochi(Object.assign({c:t.fill},d.me))+mochi(Object.assign({x:165,y:86},d.fr)),'나의 반응');
+  const p3=svgW(mochi(Object.assign({x:110,y:88,c:t.fill},d.in)),'나의 속마음');
+  return `<figure class="toon" style="--tc:${t.fill}">
+   <figcaption>${S.cap}</figcaption>
+   <div class="panels">
+    <div class="pn"><span class="tag">① 상황</span>${p1}<p class="bub"><b>${S.who}</b> ${S.line}</p></div>
+    <div class="pn"><span class="tag">② 겉으로 한 말</span>${p2}<p class="bub"><b>나</b> ${d.say}</p></div>
+    <div class="pn inner"><span class="tag">③ 속마음</span><span class="eq">${same?'겉 = 속':'겉 ≠ 속'}</span>${p3}<p class="bub think">${d.think}</p></div>
+   </div>
+   ${d.pose?`<p class="pose">${d.pose}</p>`:''}</figure>`;
+}
+/* ---------- 조직에서의 모습 ---------- */
+const WORK={
+ ga:{meet:'반대 의견이 있어도 “좋네요”라고 동의하고, 회의가 끝난 뒤 따로 불만을 털어놓아요.',
+  mem:'거절하지 못해 업무를 과하게 떠안고 번아웃이 오기 쉬워요. 문제를 보고할 때 심각성을 줄여서 말하기도 해요.',
+  lead:'팀원에게 싫은 소리를 못 해 피드백이 늦어지고, 결국 빈자리를 혼자 메꿔요.',
+  str:'분위기를 살피고 동료를 챙기는 팀의 윤활유예요. 고객과 동료의 미세한 감정 변화를 빨리 알아채요.',
+  tip:'“괜찮죠?” 대신 “걱정되는 점 하나만 말해 줄래요?”처럼 반대 의견을 말할 자리를 만들어 주세요. 일을 맡기기 전엔 지금 업무량부터 물어보세요.'},
+ na:{meet:'결론을 빨리 내리고, 반대 의견을 공격으로 받아들여 목소리가 커지기 쉬워요.',
+  mem:'문제가 생기면 원인을 다른 사람이나 다른 부서에서 먼저 찾아요.',
+  lead:'추진력은 강하지만 지시와 질책이 앞서면, 팀원들이 실수를 숨기고 보고를 미루게 돼요.',
+  str:'위기에서 결정하고 밀어붙이는 추진력, 성과를 끌어내는 리더십이 있어요.',
+  tip:'감정에 맞서기보다 “결국 원하시는 결과는 ○○이죠?”처럼 그 아래의 욕구를 짚어 주세요. 사실과 대안을 짧게 정리해 가면 대화가 빨라져요.'},
+ da:{meet:'데이터와 규정으로 말하고, 감정 이야기는 업무와 관계없다고 여겨요.',
+  mem:'정확하고 실수가 적지만, “차갑다”, “융통성이 없다”는 말을 듣기 쉬워요.',
+  lead:'기준이 분명하고 공정하지만, 칭찬과 공감이 적어 팀원들이 정서적으로 지치기 쉬워요.',
+  str:'분석력과 문제 해결력, 원칙과 품질을 지키는 힘이 있어요.',
+  tip:'근거와 구조를 갖춰 다가가되, “이 결정이 팀원들에게 어떤 영향을 줄까요?”처럼 사람에 대한 질문을 함께 건네 주세요.'},
+ ra:{meet:'긴장된 회의에서 농담이나 딴 이야기로 분위기를 풀다가 핵심을 흐리곤 해요.',
+  mem:'아이디어는 많지만 마무리가 약하고, 불편한 보고는 뒤로 미뤄요.',
+  lead:'팀 분위기는 밝지만 방향이 자주 바뀌고, 갈등을 다루기보다 덮어 두기 쉬워요.',
+  str:'창의적인 아이디어, 유머로 긴장을 푸는 힘, 팀에 활력을 불어넣는 에너지가 있어요.',
+  tip:'안건과 마감을 짧고 분명하게 정리해 한 가지에 집중하도록 도와주세요. 웃음 뒤의 불안을 탓하지 말고, 안전하게 말할 수 있는 자리를 만들어 주세요.'},
+ ma:{meet:'동의와 반대를 분명히 말하고, 다른 의견도 끝까지 들어요.',
+  mem:'문제를 빨리 공유하고, 할 수 있는 일과 없는 일을 솔직하게 말해요.',
+  lead:'기대하는 바를 분명히 전하면서 팀원의 감정도 존중해, 실수를 말할 수 있는 안전한 팀을 만들어요.',
+  str:'신뢰를 쌓고 갈등을 조정하며, 건강한 피드백 문화를 만들어요.',
+  tip:'일치형도 지칠 수 있어요. 늘 조정자 역할만 맡기지 말고, 이들의 솔직한 피드백을 반겨 주세요.'}
+};
+function workBlock(t){
+  const w=WORK[t.k];
+  return `<div class="work"><p class="k" style="margin-top:0">조직·회사에서의 ${t.name}</p>${toon(t,'office')}
+   <dl class="wl"><dt>회의에서</dt><dd>${w.meet}</dd><dt>팀원일 때</dt><dd>${w.mem}</dd><dt>리더일 때</dt><dd>${w.lead}</dd><dt>조직의 강점</dt><dd>${w.str}</dd><dt>함께 일한다면</dt><dd>${w.tip}</dd></dl></div>`;
+}
+
+function typeCard(t,n,open){
+  const body=`<div class="nick">‘${t.nick}’ · 8문항 중 ${n}개</div>${toon(t)}
+   <p class="k">이런 모습이 보여요</p><ul>${t.traits.map(x=>`<li>${x}</li>`).join('')}</ul>
+   <p class="k">마음속에 자주 맴도는 말</p><div class="quotes">${t.inner.map(x=>`<span>“${x}”</span>`).join('')}</div>
+   ${t.body?`<p class="k">몸과 마음에 나타날 수 있는 신호</p><p style="margin:4px 0">${t.body}</p>`:''}
+   <p class="k">나의 자원(강점)</p><p style="margin:4px 0">${t.res}</p>
+   <div class="lhj"><p class="k" style="margin-top:0">이헌주 교수의 관점 · ${LHJ[t.k].t}</p><p>${LHJ[t.k].p}</p>
+   <p class="k">${t.k==='ma'?'계속 이어가기':'일치형으로 가는 한 걸음'}</p><ul>${t.step.concat(LHJ[t.k].l).map(x=>`<li>${x}</li>`).join('')}</ul></div>${workBlock(t)}`;
+  return open
+   ?`<div class="card" style="border-top:6px solid var(--${t.k})"><h3 style="color:var(--${t.k})">${t.name}</h3>${body}</div>`
+   :`<details class="card"><summary><span><span style="color:var(--${t.k})">${t.name}</span> <small style="font-family:'IBM Plex Sans KR';font-size:14px;color:var(--mute)">${n}개</small></span></summary>${body}</details>`;
+}
+function renderResult(){
+  const c=counts(),mx=Math.max(...c);
+  const tops=TYPES.filter((t,i)=>c[i]===mx);
+  const lead=tops[0];
+  const svg=`<svg viewBox="0 0 320 120" aria-hidden="true"><defs><filter id="sh2" x="-10%" y="-10%" width="130%" height="150%"><feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#000" flood-opacity=".28"/></filter></defs>
+   <g filter="url(#sh2)"><path d="M40 92 L30 116 L68 92Z" fill="${lead.fill}"/><rect x="10" y="8" width="300" height="86" rx="30" fill="${lead.fill}"/>
+   <rect x="22" y="14" width="276" height="34" rx="20" fill="#fff" opacity=".18"/>
+   <text x="160" y="58" text-anchor="middle" font-family="IBM Plex Sans KR, sans-serif" font-size="19" font-weight="600" fill="#1b1d33">${lead.say}</text></g></svg>`;
+  let msg;
+  if(tops.length>1) msg=`${tops.map(t=>t.name).join('과 ')}을 똑같이 ${mx}개씩 골랐어요. 상황에 따라 여러 모습이 함께 나타나는 복합적인 유형일 수 있어요.`;
+  else if(lead.k==='ma') msg='내 마음과 겉으로 하는 말이 잘 맞는 편이에요. 나와 상대의 감정을 함께 존중하는 대화를 하고 있어요.';
+  else msg=`8문항 중 ${mx}개에서 ${lead.name}의 모습을 골랐어요. 이 모습은 나를 지키려고 익혀 온 방식이에요. 그 안에 담긴 강점을 살리면서 일치형으로 한 걸음씩 다가가 보세요.`;
+  $('rhead').innerHTML=`${svg}<div class="lab">나의 주된 의사소통 유형</div>
+   <h1 class="big">${tops.map(t=>t.name).join(' + ')}</h1>
+   <div class="lab" style="font-size:17px">${tops.map(t=>'‘'+t.nick+'’').join(' · ')}</div>
+   <p style="color:#dfe1f2;max-width:32em;margin:16px auto 0">${msg}</p>`;
+  $('bars').innerHTML=TYPES.map((t,i)=>`<div class="br"><span>${t.L} ${t.name}</span><span class="tr"><i data-w="${c[i]/Q.length*100}" style="background:var(--${t.k})"></i></span><b>${c[i]}개</b></div>`).join('');
+  $('mine').innerHTML=`<h2>${tops.length>1?'나의 유형들 자세히 보기':lead.name+' 자세히 보기'}</h2>`+tops.map(t=>typeCard(t,c[TYPES.indexOf(t)],true)).join('');
+  const rest=TYPES.map((t,i)=>({t,n:c[i]})).filter(x=>!tops.includes(x.t)).sort((a,b)=>b.n-a.n);
+  $('others').innerHTML=rest.map(x=>typeCard(x.t,x.n,false)).join('');
+  $('copyBox').hidden=true;
+  show('result');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>$('bars').querySelectorAll('i').forEach(i=>i.style.width=i.dataset.w+'%')));
+}
+function summary(){
+  const c=counts(),mx=Math.max(...c);
+  const tops=TYPES.filter((t,i)=>c[i]===mx).map(t=>`${t.name}(${t.nick})`).join(' + ');
+  return `[의사소통 유형 검사 결과]\n주된 유형: ${tops}\n`+TYPES.map((t,i)=>`${t.L}. ${t.name} ${c[i]}개`).join(' / ');
+}
+
+$('startBtn').addEventListener('click',start);
+$('againBtn').addEventListener('click',start);
+$('resumeBtn').addEventListener('click',()=>{if(S.done)renderResult();else{renderQ();show('quiz')}});
+$('homeBtn').addEventListener('click',()=>{$('resumeBtn').hidden=false;$('resumeBtn').textContent='이어서 하기';show('intro')});
+$('prevBtn').addEventListener('click',()=>{if(S.i>0){S.i--;save();renderQ()}});
+$('opts').addEventListener('click',e=>{const b=e.target.closest('.opt');if(b)choose(+b.dataset.o)});
+document.addEventListener('keydown',e=>{
+  if($('quiz').hidden)return;
+  const n=+e.key;if(n>=1&&n<=5){choose(S.order[S.i][n-1])}
+});
+$('copyBtn').addEventListener('click',async()=>{
+  const txt=summary();
+  try{await navigator.clipboard.writeText(txt);$('copyBtn').textContent='복사했어요!';setTimeout(()=>$('copyBtn').textContent='결과 복사하기',1800)}
+  catch(e){const b=$('copyBox');b.value=txt;b.hidden=false;b.select()}
+});
+
+S=load();
+if(S){
+  const any=S.ans.some(a=>a!==null);
+  if(S.done){$('resumeBtn').hidden=false;$('resumeBtn').textContent='지난 결과 보기'}
+  else if(any){$('resumeBtn').hidden=false}
+}
+}
+</script>
+</body>
+</html>
